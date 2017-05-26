@@ -1,0 +1,1 @@
+docker service create --name nodecast --constraint 'node.labels.location == home' --network traefik-net --label traefik.frontend.rule=Host:nodecast.net,www.nodecast.net --label traefik.port=8080 fredix/nodecast.net

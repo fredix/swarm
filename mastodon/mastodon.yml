@@ -1,0 +1,87 @@
+version: '3'
+services:
+  db:
+    restart: always
+    image: postgres:alpine
+    volumes:
+      - /sync/mastodon/postgres:/var/lib/postgresql/data
+    deploy:
+      placement:
+        constraints:
+          - node.labels.location == home
+  redis:
+    restart: always
+    image: redis:alpine
+    volumes:
+      - /sync/mastodon/redis:/data
+    deploy:
+      placement:
+        constraints:
+          - node.labels.location == home
+  web:
+    build: .
+    image: gargron/mastodon:v1.3.3
+    restart: always
+    env_file: .env.production
+    command: bundle exec rails s -p 3000 -b '0.0.0.0'
+    ports:
+      - "3000"
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - /sync/mastodon/public/assets:/mastodon/public/assets
+      - /sync/mastodon/public/system:/mastodon/public/system
+      - /sync/mastodon/public/packs:/mastodon/public/packs
+    networks:
+      - default
+      - traefik-net
+    deploy:
+      placement:
+        constraints:
+          - node.labels.location == home
+      labels:
+        - "traefik.port=3000"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.frontend.rule=Host:pouet.fredix.xyz"
+  streaming:
+    build: .
+    image: gargron/mastodon:v1.3.3
+    restart: always
+    env_file: .env.production
+    command: npm run start
+    ports:
+      - "4000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - default
+      - traefik-net
+    deploy:
+      placement:
+        constraints:
+          - node.labels.location == home
+      labels:
+        - "traefik.port=4000"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.backend=streaming"
+        - "traefik.frontend.rule=Host:pouet.fredix.xyz;PathPrefixStrip:/api/v1/streaming"
+  sidekiq:
+    build: .
+    image: gargron/mastodon:v1.3.3
+    restart: always
+    env_file: .env.production
+    command: bundle exec sidekiq -q default -q mailers -q pull -q push
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - /sync/mastodon/public/system:/mastodon/public/system
+    deploy:
+      placement:
+        constraints:
+          - node.labels.location == home
+networks:
+  traefik-net:
+    external: true

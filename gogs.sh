@@ -1,0 +1,1 @@
+docker service create --name gogs --constraint 'node.labels.location == home' --network traefik-net --label traefik.frontend.rule=Host:gogs.fredix.xyz --label traefik.port=3000 --label traefik.backend=gogs --mount type=bind,source=/sync/gogs/,target=/data/ gogs/gogs
