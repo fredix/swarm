@@ -32,7 +32,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.role==manager
+          - node.labels.location == home
 
 networks:
   traefik-net:
