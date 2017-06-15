@@ -7,7 +7,7 @@ services:
     ports:
       - "8000"
     volumes:
-      - /sync/drone:/var/lib/drone/
+      - /sync/drone_server:/var/lib/drone/
     networks:
       - default
       - traefik-net
@@ -29,6 +29,7 @@ services:
       - drone-server
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - /sync/drone_agent/drone.key:/drone.key
     deploy:
       placement:
         constraints:
