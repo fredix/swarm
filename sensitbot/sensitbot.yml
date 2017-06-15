@@ -1,0 +1,38 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo
+    restart: always
+    #env_file: .env.production-server
+    volumes:
+      - /sync/mongodb:/data/db
+    deploy:
+      placement:
+        constraints:
+          - node.labels.location == home
+
+  sensitbot:
+    image: fredix/sensitbot
+    restart: always
+    #env_file: .env.production-sensitbot
+    ports:
+      - "3000"
+    depends_on:
+      - mongodb
+    networks:
+      - default
+      - traefik-net
+    volumes:
+      - /sync/sensitbot/sensitbot.toml:/home/user/application/sensitbot.toml
+    deploy:
+      placement:
+        constraints:
+          - node.labels.location == home
+      labels:
+        - "traefik.port=3000"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.frontend.rule=Host:sensitbot.fredix.xyz"
+
+networks:
+  traefik-net:
+    external: true
