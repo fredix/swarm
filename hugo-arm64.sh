@@ -1,0 +1,1 @@
+docker service create --name hugo-arm64 --network traefik-net --constraint=node.role==manager --label traefik.frontend.rule=Host:fredix.xyz,www.fredix.xyz --label traefik.port=1313 fredix/arm64v8-blog
