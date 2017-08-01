@@ -1,7 +1,7 @@
 version: '3'
 services:
   drone-server:
-    image: drone/drone:0.7.1
+    image: drone/drone:0.8.0
     restart: always
     env_file: .env.production-server
     ports:
@@ -21,7 +21,7 @@ services:
         - "traefik.frontend.rule=Host:drone.fredix.xyz"
 
   drone-agent:
-    image: drone/drone:0.7.1
+    image: drone/drone:0.8.0
     restart: always
     env_file: .env.production-agent
     command: agent
