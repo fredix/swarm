@@ -1,0 +1,57 @@
+version: '3'
+services:
+  drone-server:
+    image: fredix/armv7-drone-server
+    restart: always
+    env_file: .env.production-server
+    ports:
+      - "8000"
+    volumes:
+      - /docker_volumes/drone_server:/var/lib/drone/
+    networks:
+      - default
+      - traefik-net
+    deploy:
+      placement:
+        constraints:
+          - node.labels.location == home-armv7
+      labels:
+        - "traefik.port=8000"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.frontend.rule=Host:drone.fredix.xyz"
+
+  drone-agent:
+    image: fredix/armv7-drone-agent
+    restart: always
+    env_file: .env.production-agent
+    command: agent
+    depends_on:
+      - drone-server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /docker_volumes/drone_agent/drone.key:/drone.key
+    deploy:
+      placement:
+        constraints:
+          - node.labels.location == home-armv7
+
+  drone-wall:
+    image: drone/drone-wall
+    restart: always
+    ports:
+      - "80"
+    networks:
+      - default
+      - traefik-net
+    deploy:
+      placement:
+        constraints:
+          - node.labels.location == home
+      labels:
+        - "traefik.port=80"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.frontend.rule=Host:drone-wall.fredix.xyz"
+
+networks:
+  traefik-net:
+    external: true

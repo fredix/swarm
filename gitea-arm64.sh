@@ -1,0 +1,1 @@
+docker service create --name gitea -p 10022:10022 --constraint=node.role==manager --network traefik-net --label traefik.docker.network=traefik-net --label traefik.frontend.rule=Host:gitea.fredix.xyz --label traefik.port=3000 --label traefik.backend=gitea --mount type=bind,source=/sync/gitea/,target=/data/ fredix/arm64v8-gitea:v1.2.2
