@@ -2,27 +2,32 @@ version: '3'
 services:
   drone-server:
     image: fredix/arm64v8-alpine-drone-server:0.8.2
+#    image: drone/drone
     restart: always
     env_file: .env.production-server
     ports:
-      - "8000"
-      - "9000"
+      - 8000:8000
+      - 9000:9000
+      - 80
+      - 443
     volumes:
       - /docker_volumes/drone_server:/var/lib/drone/
     networks:
-      - default
+      - drone-infra
       - traefik-net
     deploy:
       placement:
         constraints:
           - node.labels.location == cloud-arm64
+#          - node.labels.location == cloud-x86
       labels:
         - "traefik.port=8000"
         - "traefik.docker.network=traefik-net"
         - "traefik.frontend.rule=Host:drone.fredix.xyz"
 
   drone-agent:
-    image: fredix/arm64v8-alpine-drone-agent:0.8.2
+#    image: fredix/arm64v8-alpine-drone-agent:0.8.2
+    image: drone/agent:linux-arm64
     restart: always
     env_file: .env.production-agent
     command: agent
@@ -31,6 +36,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /docker_volumes/drone_agent/drone.key:/drone.key
+    networks:
+      - drone-infra
     deploy:
       placement:
         constraints:
@@ -42,7 +49,7 @@ services:
     ports:
       - "80"
     networks:
-      - default
+      - drone-infra
       - traefik-net
     deploy:
       placement:
@@ -56,3 +63,6 @@ services:
 networks:
   traefik-net:
     external: true
+  drone-infra:
+    external: true
+
