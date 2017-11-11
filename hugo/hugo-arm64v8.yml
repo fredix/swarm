@@ -20,9 +20,6 @@ services:
   isso:
     image: fredix/arm64v8-isso
     restart: always
-#    env_file: .env.production-agent
-    depends_on:
-      - hugo
     ports:
       - 80
     volumes:
