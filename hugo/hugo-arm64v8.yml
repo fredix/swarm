@@ -1,0 +1,44 @@
+version: '3'
+services:
+  hugo:
+    image: fredix/arm64v8-blog
+    restart: always
+    ports:
+      - 1313
+    networks:
+      - traefik-net
+    deploy:
+      placement:
+        constraints:
+#          - node.labels.location == cloud-arm64
+          - node.role == manager
+      labels:
+        - "traefik.port=1313"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.frontend.rule=Host:fredix.xyz,www.fredix.xyz"
+
+  isso:
+    image: fredix/arm64v8-isso
+    restart: always
+#    env_file: .env.production-agent
+    depends_on:
+      - hugo
+    ports:
+      - 80
+    volumes:
+      - /docker_volumes/isso:/data
+    networks:
+      - traefik-net
+    deploy:
+      placement:
+        constraints:
+#          - node.labels.location == cloud-arm64
+          - node.role == manager
+      labels:
+        - "traefik.port=80"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.frontend.rule=Host:isso.fredix.xyz"
+
+networks:
+  traefik-net:
+    external: true
