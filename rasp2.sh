@@ -1,0 +1,1 @@
+docker service create --name rasp2 --constraint 'node.labels.location == home-armv7' --network traefik-net --label traefik.frontend.rule=Host:rasp2.fredix.xyz --label traefik.port=80 --no-resolve-image hypriot/rpi-busybox-httpd
